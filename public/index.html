@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Penjualan</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 (gratis) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Poppins', sans-serif;
+        }
+        .navbar-brand {
+            font-weight: 600;
+            color: #4e73df !important;
+        }
+        .card-dashboard {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            transition: transform 0.2s;
+        }
+        .card-dashboard:hover {
+            transform: translateY(-5px);
+        }
+        .card-icon {
+            font-size: 2.5rem;
+            color: #4e73df;
+        }
+        .table thead th {
+            background-color: #4e73df;
+            color: white;
+            font-weight: 500;
+            border: none;
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 5px;
+        }
+        .btn-edit {
+            background-color: #f6c23e;
+            border-color: #f6c23e;
+            color: #fff;
+        }
+        .btn-edit:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+        }
+        .btn-delete {
+            background-color: #e74a3b;
+            border-color: #e74a3b;
+            color: #fff;
+        }
+        .btn-delete:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+        }
+        .modal-content {
+            border-radius: 15px;
+        }
+        .modal-header {
+            background-color: #4e73df;
+            color: white;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-store me-2"></i>Dashboard Penjualan
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Kartu Statistik -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card card-dashboard p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon me-3">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total Produk</h6>
+                            <h3 id="totalProduk">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-dashboard p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon me-3">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total Item Terjual</h6>
+                            <h3 id="totalItem">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-dashboard p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon me-3">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Total Pendapatan</h6>
+                            <h3 id="totalPendapatan">Rp 0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol Tambah Data -->
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" onclick="resetForm()">
+                <i class="fas fa-plus me-2"></i>Tambah Data
+            </button>
+        </div>
+
+        <!-- Tabel Data Penjualan -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Daftar Penjualan</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Produk</th>
+                                <th>Jumlah</th>
+                                <th>Harga Satuan</th>
+                                <th>Total Harga</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="7" class="text-center">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form (Tambah/Edit) -->
+    <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah Data Penjualan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="penjualanForm">
+                        <input type="hidden" id="editId">
+                        <div class="mb-3">
+                            <label for="nama_produk" class="form-label">Nama Produk</label>
+                            <input type="text" class="form-control" id="nama_produk" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="jumlah" class="form-label">Jumlah</label>
+                            <input type="number" class="form-control" id="jumlah" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="harga_satuan" class="form-label">Harga Satuan (Rp)</label>
+                            <input type="number" class="form-control" id="harga_satuan" min="0" step="100" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Ganti dengan base URL API Anda
+        const API_BASE = 'http://localhost/api'; // sesuaikan jika berbeda
+
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        // Format rupiah
+        function formatRupiah(angka) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+        }
+
+        // Load data dan perbarui tabel & statistik
+        async function loadData() {
+            try {
+                const response = await fetch(`${API_BASE}/read.php`);
+                const data = await response.json();
+
+                const tbody = document.getElementById('table-body');
+                if (data.message && data.message === 'Data tidak ditemukan.') {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">Tidak ada data</td></tr>';
+                    updateStatistics([]);
+                    return;
+                }
+
+                // Render tabel
+                let rows = '';
+                let totalProduk = 0;
+                let totalItem = 0;
+                let totalPendapatan = 0;
+
+                data.forEach(item => {
+                    totalProduk++;
+                    totalItem += parseInt(item.jumlah);
+                    totalPendapatan += parseFloat(item.total_harga || (item.jumlah * item.harga_satuan));
+
+                    rows += `<tr>
+                        <td>${item.id}</td>
+                        <td>${item.nama_produk}</td>
+                        <td>${item.jumlah}</td>
+                        <td>${formatRupiah(item.harga_satuan)}</td>
+                        <td>${formatRupiah(item.total_harga || (item.jumlah * item.harga_satuan))}</td>
+                        <td>${item.tanggal || '-'}</td>
+                        <td>
+                            <button class="btn btn-action btn-edit me-1" onclick="editData(${item.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-action btn-delete" onclick="confirmDelete(${item.id})" title="Hapus">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+
+                tbody.innerHTML = rows;
+                updateStatistics({ totalProduk, totalItem, totalPendapatan });
+            } catch (error) {
+                console.error('Gagal memuat data:', error);
+                Swal.fire('Error', 'Tidak dapat memuat data.', 'error');
+            }
+        }
+
+        function updateStatistics({ totalProduk, totalItem, totalPendapatan }) {
+            document.getElementById('totalProduk').innerText = totalProduk || 0;
+            document.getElementById('totalItem').innerText = totalItem || 0;
+            document.getElementById('totalPendapatan').innerText = formatRupiah(totalPendapatan || 0);
+        }
+
+        // Reset form untuk tambah data
+        function resetForm() {
+            document.getElementById('penjualanForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('modalTitle').innerText = 'Tambah Data Penjualan';
+        }
+
+        // Simpan data (tambah/edit)
+        async function saveData() {
+            const id = document.getElementById('editId').value;
+            const nama_produk = document.getElementById('nama_produk').value.trim();
+            const jumlah = document.getElementById('jumlah').value;
+            const harga_satuan = document.getElementById('harga_satuan').value;
+
+            if (!nama_produk || !jumlah || !harga_satuan) {
+                Swal.fire('Peringatan', 'Semua field harus diisi!', 'warning');
+                return;
+            }
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_BASE}/update.php` : `${API_BASE}/create.php`;
+            const body = id ? { id, nama_produk, jumlah, harga_satuan } : { nama_produk, jumlah, harga_satuan };
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const result = await response.json();
+
+                if (result.message.includes('berhasil')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: result.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    bootstrap.Modal.getInstance(document.getElementById('formModal')).hide();
+                    loadData(); // reload tabel
+                } else {
+                    Swal.fire('Gagal', result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Terjadi kesalahan koneksi.', 'error');
+            }
+        }
+
+        // Edit data: isi form dengan data yang dipilih
+        async function editData(id) {
+            try {
+                const response = await fetch(`${API_BASE}/read.php`);
+                const data = await response.json();
+                const item = data.find(d => d.id == id);
+                if (item) {
+                    document.getElementById('editId').value = item.id;
+                    document.getElementById('nama_produk').value = item.nama_produk;
+                    document.getElementById('jumlah').value = item.jumlah;
+                    document.getElementById('harga_satuan').value = item.harga_satuan;
+                    document.getElementById('modalTitle').innerText = 'Edit Data Penjualan';
+                    new bootstrap.Modal(document.getElementById('formModal')).show();
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Gagal mengambil data.', 'error');
+            }
+        }
+
+        // Konfirmasi hapus dengan SweetAlert2
+        function confirmDelete(id) {
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteData(id);
+                }
+            });
+        }
+
+        async function deleteData(id) {
+            try {
+                const response = await fetch(`${API_BASE}/delete.php`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const result = await response.json();
+                if (result.message.includes('berhasil')) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Dihapus!',
+                        text: result.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadData();
+                } else {
+                    Swal.fire('Gagal', result.message, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Terjadi kesalahan koneksi.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
